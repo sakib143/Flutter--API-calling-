@@ -31,51 +31,76 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   Dio dio = new Dio();
+  String mockStringData;
 
-  Future getData() async {
-    final String pathUrl = 'https://jsonplaceholder.typicode.com/posts/1';
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (RequestOptions option) async {
-          var header = {
-            'Content-type': 'application/json; charset=UTF-8',
-            'Accept': 'application/json',
-          };
-          option.headers.addAll(header);
-          return option.data;
+  //Below two variable will be used for decoding API response.
+  Map<String, dynamic> datamodel;
+  List<dynamic> alAllData;
+  String mockData, title = "", body = '', userId = '', id = '';
+
+  Future getMainCategory() async {
+    final pathUrl = "http://103.240.90.81:8101/api/get_spdata";
+    dynamic data = {
+      "Mode": "getallactivecategory",
+    };
+    var response = await dio.post(
+      pathUrl,
+      data: data,
+      options: Options(
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
         },
       ),
     );
-
-    Response response = await dio.get(pathUrl);
+    setState(() {
+      mockData = response.toString(); // Add data to string for decoding.
+    });
     return response.data;
   }
+  //Post api request related stuff by Sakib END
+
+  //After API call done, decode API response related stuff START
+  Future decodeData() async {
+    print("decodeData methd is calling !!! ");
+    final Map parsedDdata = await json.decode(mockData);
+    print(parsedDdata['data']);
+    setState(() {
+      alAllData = parsedDdata['data'];
+    });
+  }
+  //After API call done, decode API response related stuff END
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: Text("Flutter - Retrofit Implementation"),
-        ),
-        body: Center(
-          child: Column(
-            children: [
-              MaterialButton(
-                color: Colors.black,
-                onPressed: () async {
-                  print('Geting data');
-                  await getData().then((value) => {
-                        print(value),
-                      });
-                },
-                child: Text(
-                  "Get",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text("Flutter - Retrofit Implementation"),
+      ),
+      body: Container(
+        child: FutureBuilder(
+          future: getMainCategory().whenComplete(
+            () async {
+              await decodeData();
+            },
           ),
-        ));
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+            return ListView.builder(
+                itemCount: alAllData.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    child: ListTile(
+                      title: Text(alAllData[index]['ItemCategoryName']),
+                      subtitle: Text(alAllData[index]['ShortName']),
+                    ),
+                  );
+                });
+          },
+        ),
+      ),
+    );
   }
 }
