@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -31,55 +30,25 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-// //After API call done, decode API response related stuff START
-//   Map<String, dynamic> datamodel;
-  // Future decodeData() async {
-  //   print("decodeData methd is calling !!! ");
-  //   final Map parsedDdata = await json.decode(mockData);
-  //   // print(parsedDdata['title']);
-  //   // print(parsedDdata['body']);
-  // }
-// //After API call done, decode API response related stuff END
-
-  //Post api request related stuff by Sakib START
   Dio dio = new Dio();
-  Map<String, dynamic> datamodel;
-  String mockData, title = "", body = '', userId = '', id = '';
 
-  Future postData() async {
-    final pathUrl = "https://jsonplaceholder.typicode.com/posts";
-    dynamic data = {
-      "title": "Flutter api calling",
-      "body": "Flutter body",
-      "userId": 1
-    };
-    var response = await dio.post(
-      pathUrl,
-      data: data,
-      options: Options(
-        headers: {
-          'Content-type': 'application/json; charset=UTF-8',
+  Future getData() async {
+    final String pathUrl = 'https://jsonplaceholder.typicode.com/posts/1';
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (RequestOptions option) async {
+          var header = {
+            'Content-type': 'application/json; charset=UTF-8',
+            'Accept': 'application/json',
+          };
+          option.headers.addAll(header);
+          return option.data;
         },
       ),
     );
-    //Post api request related stuff by Sakib END
-    setState(() {
-      mockData = response.toString(); // Add data to string for decoding.
-    });
-    return response.data;
-  }
 
-  Future decodeData() async {
-    print("decodeData methd is calling !!! ");
-    final Map parsedDdata = await json.decode(mockData);
-    // print(parsedDdata['title']);
-    // print(parsedDdata['body']);
-    setState(() {
-      title = parsedDdata['title'];
-      body = parsedDdata['body'];
-      id = parsedDdata['id'].toString();
-      userId = parsedDdata['userId'].toString();
-    });
+    Response response = await dio.get(pathUrl);
+    return response.data;
   }
 
   @override
@@ -95,23 +64,16 @@ class _MyHomePageState extends State<MyHomePage> {
               MaterialButton(
                 color: Colors.black,
                 onPressed: () async {
-                  print("Posting data");
-                  await postData().then((value) {
-                    print("API response");
-                    print(value);
-                  }).whenComplete(() async {
-                    await decodeData();
-                  });
+                  print('Geting data');
+                  await getData().then((value) => {
+                        print(value),
+                      });
                 },
                 child: Text(
-                  "Post",
+                  "Get",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
-              Text('Title:- $title'),
-              Text('Body:-  $body'),
-              Text('User id :-  $userId'),
-              Text('Id:-  $id'),
             ],
           ),
         ));
