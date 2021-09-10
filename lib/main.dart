@@ -31,18 +31,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-// //After API call done, decode API response related stuff START
-//   Map<String, dynamic> datamodel;
-  // Future decodeData() async {
-  //   print("decodeData methd is calling !!! ");
-  //   final Map parsedDdata = await json.decode(mockData);
-  //   // print(parsedDdata['title']);
-  //   // print(parsedDdata['body']);
-  // }
-// //After API call done, decode API response related stuff END
-
   //Post api request related stuff by Sakib START
   Dio dio = new Dio();
+  //Below two variable will be used for decoding API response.
   Map<String, dynamic> datamodel;
   String mockData, title = "", body = '', userId = '', id = '';
 
@@ -62,18 +53,17 @@ class _MyHomePageState extends State<MyHomePage> {
         },
       ),
     );
-    //Post api request related stuff by Sakib END
     setState(() {
       mockData = response.toString(); // Add data to string for decoding.
     });
     return response.data;
   }
+  //Post api request related stuff by Sakib END
 
+// //After API call done, decode API response related stuff START
   Future decodeData() async {
     print("decodeData methd is calling !!! ");
     final Map parsedDdata = await json.decode(mockData);
-    // print(parsedDdata['title']);
-    // print(parsedDdata['body']);
     setState(() {
       title = parsedDdata['title'];
       body = parsedDdata['body'];
@@ -81,6 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
       userId = parsedDdata['userId'].toString();
     });
   }
+  //After API call done, decode API response related stuff END
 
   @override
   Widget build(BuildContext context) {
